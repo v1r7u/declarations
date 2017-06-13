@@ -1,15 +1,21 @@
-﻿namespace Declarations.Parser.Models
+﻿using System.Collections.Generic;
+
+namespace Declarations.Parser.Models
 {
     public class Person
     {
-        public byte Id { get; set; }
+        public Person(int id, string declarationId, Name name)
+        {
+            Id = id;
+            DeclarationId = declarationId;
+            Names = new List<Name>();
+            Names.Add(name);
+        }
 
-        public string LastName1 { get; set; }
-        public string FirstName1 { get; set; }
-        public string MiddleName1 { get; set; }
+        public int Id { get; }
 
-        public string LastName2 { get; set; }
-        public string FirstName2 { get; set; }
-        public string MiddleName2 { get; set; }
+        public string DeclarationId { get; }
+
+        public List<Name> Names { get; }
     }
 }
