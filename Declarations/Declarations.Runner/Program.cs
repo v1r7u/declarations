@@ -15,7 +15,7 @@ namespace Declarations.Runner
 
             Parse.FromFile(path, Encoding.UTF8);
 
-            Console.WriteLine("Press ENTER to exit");
+            Console.WriteLine($"[{DateTime.UtcNow}]: Press ENTER to exit");
             Console.ReadLine();
         }
     }

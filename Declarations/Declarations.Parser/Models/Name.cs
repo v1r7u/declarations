@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Declarations.Parser.Models
 {
@@ -7,17 +7,15 @@ namespace Declarations.Parser.Models
     {
         public int Id { get; set; }
 
-        public string FirstName { get; set; }
-        public string MiddleName { get; set; }
-        public string LastName { get; set; }
-
         public string Raw { get; set; }
 
-        public List<Person> Persons { get; } = new List<Person>();
+        public int[] Parts { get; set; }
 
         public override int GetHashCode()
         {
-            return FirstName.GetHashCode() ^ MiddleName.GetHashCode() ^ LastName.GetHashCode();
+            return Parts
+                .Select(i => i.GetHashCode())
+                .Aggregate((a, b) => b ^ a);
         }
 
         public override bool Equals(object obj)
@@ -30,15 +28,22 @@ namespace Declarations.Parser.Models
 
         public bool Equals(Name other)
         {
-            return string.Compare(FirstName, other.FirstName, StringComparison.OrdinalIgnoreCase) == 0 &&
-                   string.Compare(MiddleName, other.MiddleName, StringComparison.OrdinalIgnoreCase) == 0 &&
-                   string.Compare(LastName, other.LastName, StringComparison.OrdinalIgnoreCase) == 0;
+            if (other.Parts.Length != Parts.Length)
+                return false;
+
+            for (var i=0; i < Parts.Length; i++)
+            {
+                if (Parts[i] != other.Parts[i])
+                    return false;
+            }
+
+            return true;
         }
 
         public override string ToString()
         {
             return string.IsNullOrWhiteSpace(Raw)
-                ? $"{LastName} {FirstName} {MiddleName}"
+                ? string.Join(" ", Parts)
                 : Raw;
         }
     }
