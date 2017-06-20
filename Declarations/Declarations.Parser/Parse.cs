@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,9 +50,9 @@ namespace Declarations.Parser
             Console.WriteLine($"Ended at {DateTime.UtcNow}");
 
             Task.WaitAll(
-                SqlStorage.SavePersons(encoding),
-                SqlStorage.SaveNames(encoding),
-                SqlStorage.SaveNameParts(encoding),
+                FileStorage.SavePersons(encoding),
+                FileStorage.SaveNames(encoding),
+                FileStorage.SaveNameParts(encoding),
                 FileStorage.SaveErrors(encoding));
         }
 
@@ -140,7 +141,7 @@ namespace Declarations.Parser
         private static void SavePerson(string declarationId, string relation, string[] parts, string rawData)
         {
             var partIds = parts
-                .Select(i => nameParts.GetOrAdd(i, (key) => new NamePart(Interlocked.Increment(ref namePartId), key)))
+                .Select(i => nameParts.GetOrAdd(i.ToUpper(), (key) => new NamePart(Interlocked.Increment(ref namePartId), i)))
                 .ToArray();
 
             var name = new Name
@@ -155,20 +156,22 @@ namespace Declarations.Parser
             persons.Add(new Person(Interlocked.Increment(ref personId), declarationId, relation, name));
         }
 
-        private static string[] Splitter(string i)
+        private static string[] Splitter(string str)
         {
-            var parts = i.Split(new[] { ' ', '.', '-' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = str
+                .Split(new[] { ' ', '.', '-' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.RemoveNonAlphanumeric())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToArray();
             
             return parts;
         }
 
-        private static string[] Splitter(string lastName, string firstName, string middleName)
+        private static string RemoveNonAlphanumeric(this string str)
         {
-            var parts1 = lastName.Split(new[] { ' ', '.', '-' }, StringSplitOptions.RemoveEmptyEntries);
-            var parts2 = firstName.Split(new[] { ' ', '.', '-' }, StringSplitOptions.RemoveEmptyEntries);
-            var parts3 = middleName.Split(new[] { ' ', '.', '-' }, StringSplitOptions.RemoveEmptyEntries);
+            var result = str.Where(c => char.IsLetter(c)).ToArray();
 
-            return parts1.Concat(parts2).Concat(parts3).ToArray();
+            return new string(result);
         }
     }
 }
