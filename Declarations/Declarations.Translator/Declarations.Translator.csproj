@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3CC93921-BE40-4AD5-B9B5-FA90A1661106}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>Declarations.Runner</RootNamespace>
-    <AssemblyName>Declarations.Runner</AssemblyName>
+    <ProjectGuid>{D06BC6E6-8FC8-4163-B6AF-907AD23B100F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Declarations.Translator</RootNamespace>
+    <AssemblyName>Declarations.Translator</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -31,10 +31,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -43,21 +48,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="AzureAuthToken.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Declarations.Parser\Declarations.Parser.csproj">
-      <Project>{59D51D7B-09DF-4A68-8D50-BB97BD56EEC9}</Project>
-      <Name>Declarations.Parser</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Declarations.TRanslator\Declarations.Translator.csproj">
-      <Project>{D06BC6E6-8FC8-4163-B6AF-907AD23B100F}</Project>
-      <Name>Declarations.Translator</Name>
-    </ProjectReference>
+    <Compile Include="Translators\AzureTranslator.cs" />
+    <Compile Include="TranslationPair.cs" />
+    <Compile Include="Translators\ITranslator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
