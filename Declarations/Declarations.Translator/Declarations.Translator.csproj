@@ -53,6 +53,7 @@
     <Compile Include="Translators\AzureTranslator.cs" />
     <Compile Include="TranslationPair.cs" />
     <Compile Include="Translators\ITranslator.cs" />
+    <Compile Include="Translators\YandexTranslator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
