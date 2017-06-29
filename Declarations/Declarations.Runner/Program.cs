@@ -1,8 +1,11 @@
 ﻿using Declarations.Parser;
+using Declarations.Searcher;
 using Declarations.Translator.Translators;
 using System;
 using System.Configuration;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Declarations.Runner
 {
@@ -13,10 +16,35 @@ namespace Declarations.Runner
         {
             Console.WriteLine($"Started at {DateTime.UtcNow}");
 
-            //var path = @"C:\Users\igork\Downloads\full_export.json.bz2";
+            // ParseArchive();
+            //Translate();
 
-            //Parse.FromFile(path, Encoding.UTF8);
+            try
+            {
+                Start
+                    .New()
+                    .PrepareData()
+                    .Wait();
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
+                Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
+            }
 
+            Console.WriteLine($"[{DateTime.UtcNow}]: Press ENTER to exit");
+            Console.ReadLine();
+        }
+
+        private static void ParseArchive()
+        {
+            var path = @"C:\Users\igork\Downloads\full_export.json.bz2";
+
+            Parse.FromFile(path, Encoding.UTF8);
+        }
+
+        private static void Translate()
+        {
             var oneRequestLength = int.Parse(ConfigurationManager.AppSettings["Translator.OneRequestMaxLength"]);
             var keysPath = ConfigurationManager.AppSettings["Translator.KeysFilePath"];
 
@@ -39,9 +67,6 @@ namespace Declarations.Runner
                 var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
                 Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
             }
-
-            Console.WriteLine($"[{DateTime.UtcNow}]: Press ENTER to exit");
-            Console.ReadLine();
         }
     }
 }
