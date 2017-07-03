@@ -2,15 +2,18 @@
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Declarations.Searcher
 {
     public class ElasticWrapper
     {
+        private readonly Uri elasticUri = new Uri("http://localhost:9200");
+
         public async Task UploadBulk(IEnumerable<DeclarantEntity> declarants)
         {
-            var pool = new SingleNodeConnectionPool(new Uri("http://localhost:9200"));
+            var pool = new SingleNodeConnectionPool(elasticUri);
             var connectionSettings = new ConnectionSettings(pool);
 
             var client = new ElasticClient(connectionSettings);
@@ -20,20 +23,60 @@ namespace Declarations.Searcher
             {
                 bulk.Add(decl);
 
-                if (bulk.Count == 1000)
+                if (bulk.Count == 5000)
                 {
-                    try
-                    {
-                        var response = await client.IndexManyAsync(bulk, "declarants");
-                    }
-                    catch (Exception ex)
-                    {
-                        var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
-                        Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
-                    }
-                    bulk.Clear();
+                    await SendBulk(client, bulk);
                 }
             }
+
+            if (bulk.Count > 0)
+            {
+                await SendBulk(client, bulk);
+            }
+        }
+
+        public async Task<ElasticResult<DeclarantEntity>[]> Search(string firstName, string lastName)
+        {
+            var pool = new SingleNodeConnectionPool(elasticUri);
+            var connectionSettings = new ConnectionSettings(pool);
+
+            var client = new ElasticClient(connectionSettings);
+            
+            var searchResults = await client
+                .SearchAsync<DeclarantEntity>(search => search
+                    .Index("declarants")
+                    .MinScore(10.0)
+                    .Size(50)
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(s =>
+                                s.Match(m => m
+                                    .Query(firstName)
+                                    .Field(f => f.FirstNames)
+                                    .Fuzziness(Fuzziness.EditDistance(2))),
+                                s => s.Match(m => m
+                                    .Query(lastName)
+                                    .Field(f => f.LastNames)
+                                    .Fuzziness(Fuzziness.EditDistance(2)))))));
+
+            return searchResults
+                .Hits
+                .Select(i => new ElasticResult<DeclarantEntity>(i.Source, i.Score))
+                .ToArray();
+        }
+
+        private static async Task SendBulk(ElasticClient client, List<DeclarantEntity> bulk)
+        {
+            try
+            {
+                var response = await client.IndexManyAsync(bulk, "declarants");
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
+                Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
+            }
+            bulk.Clear();
         }
     }
 }

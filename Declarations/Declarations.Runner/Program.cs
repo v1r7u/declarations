@@ -14,6 +14,7 @@ namespace Declarations.Runner
 
         static void Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
             Console.WriteLine($"Started at {DateTime.UtcNow}");
 
             // ParseArchive();
@@ -21,13 +22,15 @@ namespace Declarations.Runner
 
             try
             {
+                //var elastic = new ElasticWrapper();
+                //elastic.Search("asd", "Asda").Wait();
                 Start
                     .New()
-                    .PrepareData()
+                    .SearchAll()
                     .Wait();
             }
             catch (Exception ex)
-            {
+            { 
                 var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
                 Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
             }

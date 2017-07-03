@@ -11,11 +11,11 @@ namespace Declarations.Searcher
     {
         private readonly string[] translationFiles = new[]
         {
-            @"C:\Users\igork\Desktop\data\all_trans.csv",
-            @"C:\Users\igork\Desktop\data\bing-ru-cs.csv",
-            @"C:\Users\igork\Desktop\data\bing-uk-cs.csv",
-            @"C:\Users\igork\Desktop\data\bing-ru-en.csv",
-            @"C:\Users\igork\Desktop\data\bing-uk-en.csv"
+            @"D:\data\all_trans.csv",
+            @"D:\data\bing-ru-cs.csv",
+            @"D:\data\bing-uk-cs.csv",
+            @"D:\data\bing-ru-en.csv",
+            @"D:\data\bing-uk-en.csv"
         };
 
         private readonly ConcurrentDictionary<int, HashSet<string>> allTranslations = new ConcurrentDictionary<int, HashSet<string>>();
@@ -34,7 +34,7 @@ namespace Declarations.Searcher
 
         internal async Task LoadDeclarations()
         {
-            using (var stream = File.OpenRead(@"C:\Users\igork\Desktop\data\persons.csv"))
+            using (var stream = File.OpenRead(@"D:\data\persons.csv"))
             using (var reader = new StreamReader(stream))
             {
                 var line = await reader.ReadLineAsync();
@@ -54,7 +54,7 @@ namespace Declarations.Searcher
 
         internal async Task MapDeclarantsToTranslations()
         {
-            using (var stream = File.OpenRead(@"C:\Users\igork\Desktop\data\names.csv"))
+            using (var stream = File.OpenRead(@"D:\data\names.csv"))
             using (var reader = new StreamReader(stream))
             {
                 var line = await reader.ReadLineAsync();
@@ -67,18 +67,7 @@ namespace Declarations.Searcher
                         var nameId = int.Parse(parts[0]);
                         var namePartIds = parts.Last().Split(' ');
 
-                        if (namePartIds.Length == 3)
-                        {
-                            if (declarants.TryGetValue(nameId, out var declarant))
-                            {
-                                if (allTranslations.TryGetValue(int.Parse(namePartIds[0]), out var lastNames))
-                                    declarant.LastNames = lastNames.ToArray();
-
-                                if (allTranslations.TryGetValue(int.Parse(namePartIds[2]), out var firstNames))
-                                    declarant.FirstNames = firstNames.ToArray();
-                            }
-                        }
-                        else if (namePartIds.Length == 2)
+                        if (namePartIds.Length == 3 || namePartIds.Length == 2)
                         {
                             if (declarants.TryGetValue(nameId, out var declarant))
                             {

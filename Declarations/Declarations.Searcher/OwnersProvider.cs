@@ -6,9 +6,9 @@ namespace Declarations.Searcher
 {
     public class OwnersProvider
     {
-        private const string _path = "./../../test.csv";
+        private const string _path = "D:/data/test.csv";
 
-        public IEnumerable<(string lastName, string firstName, string id)> GetIterator()
+        public IEnumerable<(string lastName, string firstName, string fullLine)> GetIterator()
         {
             using (var stream = File.OpenRead(_path))
             using (var reader = new StreamReader(stream))
@@ -17,7 +17,7 @@ namespace Declarations.Searcher
 
                 do
                 {
-                    var id = string.Empty;
+                    var fullLine = string.Empty;
                     var firstName = string.Empty;
                     var lastName = string.Empty;
 
@@ -31,8 +31,8 @@ namespace Declarations.Searcher
 
                         if (nameParts.Length == 2)
                         {
-                            id = parts[0];
-                            lastName = nameParts[0];
+                            fullLine = line;
+                            lastName = nameParts[0].StartsWith("\"") ? nameParts[0].Substring(1) : nameParts[0];
                             firstName = nameParts[1];
                         }
                     }
@@ -42,9 +42,9 @@ namespace Declarations.Searcher
                         Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
                     }
 
-                    if (!string.IsNullOrEmpty(id))
+                    if (!string.IsNullOrEmpty(fullLine))
                     {
-                        yield return (lastName, firstName, id);
+                        yield return (lastName, firstName, fullLine);
                     }
                 }
                 while (!string.IsNullOrEmpty(line));

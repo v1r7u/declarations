@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ElasticResult.cs" />
     <Compile Include="OwnersProvider.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="ElasticWrapper.cs" />
