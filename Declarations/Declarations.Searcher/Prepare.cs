@@ -10,14 +10,7 @@ namespace Declarations.Searcher
 {
     internal class Prepare
     {
-        private readonly string[] translationFiles = new[]
-        {
-            @"D:\data\all_trans.csv",
-            @"D:\data\bing-ru-cs.csv",
-            @"D:\data\bing-uk-cs.csv",
-            @"D:\data\bing-ru-en.csv",
-            @"D:\data\bing-uk-en.csv"
-        };
+        private readonly string translationFiles = @"D:\data\2\all_trans.csv";
 
         private readonly ConcurrentDictionary<int, HashSet<string>> allTranslations = new ConcurrentDictionary<int, HashSet<string>>();
         private readonly ConcurrentBag<string> notDefaultNameTypes = new ConcurrentBag<string>();
@@ -27,11 +20,7 @@ namespace Declarations.Searcher
 
         internal Task LoadTranslations()
         {
-            var tasks = translationFiles
-                .Select(file => ProcessFile(file))
-                .ToArray();
-
-            return Task.WhenAll(tasks);
+            return ProcessFile(translationFiles);
         }
 
         internal async Task LoadDeclarations()
@@ -118,18 +107,25 @@ namespace Declarations.Searcher
                 {
                     var parts = line
                         .Split(',')
-                        .Select(i => i.Replace("'", string.Empty))
                         .ToArray();
+
                     var id = int.Parse(parts[0]);
                     for (var i = 2; i < parts.Length; i++)
                     {
-                        var set = allTranslations.GetOrAdd(id, key => new HashSet<string>(new string[] { parts[1] }));
-                        set.Add(parts[i]);
+                        var set = allTranslations.GetOrAdd(id, key => new HashSet<string>(new string[] { RemoveNonAlphanumeric(parts[1]) }));
+                        set.Add(RemoveNonAlphanumeric(parts[i]));
                     }
 
                     line = await reader.ReadLineAsync();
                 }
             }
+        }
+
+        private string RemoveNonAlphanumeric(string str)
+        {
+            var result = str.Where(c => char.IsLetter(c)).ToArray();
+
+            return new string(result);
         }
     }
 }

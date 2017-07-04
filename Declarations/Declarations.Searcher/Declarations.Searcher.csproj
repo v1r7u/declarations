@@ -69,5 +69,8 @@
       <Name>Declarations.Parser</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="IndexUpdater.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

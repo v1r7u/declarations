@@ -5,13 +5,11 @@ using System;
 using System.Configuration;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Declarations.Runner
 {
     class Program
     {
-
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
@@ -27,6 +25,14 @@ namespace Declarations.Runner
                     .PrepareData().Result
                     .SearchAll().Result
                     .SaveSearchResults();
+            }
+            catch (AggregateException aggr)
+            {
+                foreach (var ex in aggr.InnerExceptions)
+                {
+                    var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
+                    Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
+                }
             }
             catch (Exception ex)
             {

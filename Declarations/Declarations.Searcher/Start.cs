@@ -45,6 +45,13 @@ namespace Declarations.Searcher
             return this;
         }
 
+        public async Task<Start> LoadDeclarations()
+        {
+            await _preparation.LoadDeclarations();
+
+            return this;
+        }
+
         private List<ElasticResult<DeclarantEntity>> rawResults = new List<ElasticResult<DeclarantEntity>>();
         private List<Result> results = new List<Result>();
         

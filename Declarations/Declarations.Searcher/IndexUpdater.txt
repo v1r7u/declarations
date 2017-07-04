@@ -1,0 +1,17 @@
+﻿POST /declarants/_close
+
+PUT /declarants/_settings
+{
+    "settings" : {
+        "analysis" : {
+            "analyzer" : {
+                "default" : {
+                    "tokenizer" : "standard",
+                    "filter" : ["standard", "asciifolding", "lowercase"]
+                }
+            }
+        }
+    }
+}
+
+POST /declarants/_open
