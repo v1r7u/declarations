@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Declarations.Parser.Models;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,7 @@ namespace Declarations.Searcher
         private readonly ConcurrentBag<string> notDefaultNameTypes = new ConcurrentBag<string>();
 
         internal readonly ConcurrentDictionary<int, DeclarantEntity> declarants = new ConcurrentDictionary<int, DeclarantEntity>();
+        internal readonly ConcurrentDictionary<int, Person> persons = new ConcurrentDictionary<int, Person>();
 
         internal Task LoadTranslations()
         {
@@ -34,18 +36,28 @@ namespace Declarations.Searcher
 
         internal async Task LoadDeclarations()
         {
-            using (var stream = File.OpenRead(@"D:\data\persons.csv"))
+            using (var stream = File.OpenRead(@"D:\data\2\persons.csv"))
             using (var reader = new StreamReader(stream))
             {
                 var line = await reader.ReadLineAsync();
                 line = await reader.ReadLineAsync();
                 while (!string.IsNullOrEmpty(line))
                 {
-                    var parts = line.Split(',');
-                    var nameId = int.Parse(parts[3]);
-                    var declId = parts[1];
+                    try
+                    {
+                        var parts = line.Split(',');
+                        var nameId = int.Parse(parts.Last());
+                        var id = int.Parse(parts.First());
+                        var declId = parts[1];
 
-                    declarants.TryAdd(nameId, new DeclarantEntity(declId));
+                        declarants.TryAdd(nameId, new DeclarantEntity(id, declId));
+                        persons.TryAdd(id, new Person(declId, parts[2], parts[3], parts[4], parts[5]));
+                    }
+                    catch(Exception ex)
+                    {
+                        var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
+                        Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
+                    }
 
                     line = await reader.ReadLineAsync();
                 }
@@ -54,7 +66,7 @@ namespace Declarations.Searcher
 
         internal async Task MapDeclarantsToTranslations()
         {
-            using (var stream = File.OpenRead(@"D:\data\names.csv"))
+            using (var stream = File.OpenRead(@"D:\data\2\names.csv"))
             using (var reader = new StreamReader(stream))
             {
                 var line = await reader.ReadLineAsync();
@@ -104,7 +116,10 @@ namespace Declarations.Searcher
                 line = await reader.ReadLineAsync();
                 while (!string.IsNullOrEmpty(line))
                 {
-                    var parts = line.Split(',');
+                    var parts = line
+                        .Split(',')
+                        .Select(i => i.Replace("'", string.Empty))
+                        .ToArray();
                     var id = int.Parse(parts[0]);
                     for (var i = 2; i < parts.Length; i++)
                     {

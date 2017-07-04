@@ -17,20 +17,19 @@ namespace Declarations.Runner
             Console.OutputEncoding = Encoding.UTF8;
             Console.WriteLine($"Started at {DateTime.UtcNow}");
 
-            // ParseArchive();
+            //ParseArchive();
             //Translate();
 
             try
             {
-                //var elastic = new ElasticWrapper();
-                //elastic.Search("asd", "Asda").Wait();
                 Start
                     .New()
-                    .SearchAll()
-                    .Wait();
+                    .PrepareData().Result
+                    .SearchAll().Result
+                    .SaveSearchResults();
             }
             catch (Exception ex)
-            { 
+            {
                 var errorMessage = $"Exception {ex.Message} of type {ex.GetType()} at {Environment.NewLine}{ex.StackTrace}";
                 Console.WriteLine($"[{DateTime.UtcNow}]: {errorMessage}");
             }

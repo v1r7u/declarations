@@ -23,7 +23,7 @@ namespace Declarations.Searcher
             {
                 bulk.Add(decl);
 
-                if (bulk.Count == 5000)
+                if (bulk.Count == 10000)
                 {
                     await SendBulk(client, bulk);
                 }
@@ -46,18 +46,18 @@ namespace Declarations.Searcher
                 .SearchAsync<DeclarantEntity>(search => search
                     .Index("declarants")
                     .MinScore(10.0)
-                    .Size(50)
+                    .Size(100)
                     .Query(q => q
                         .Bool(b => b
                             .Must(s =>
                                 s.Match(m => m
                                     .Query(firstName)
                                     .Field(f => f.FirstNames)
-                                    .Fuzziness(Fuzziness.EditDistance(2))),
+                                    .Fuzziness(Fuzziness.EditDistance(1))),
                                 s => s.Match(m => m
                                     .Query(lastName)
                                     .Field(f => f.LastNames)
-                                    .Fuzziness(Fuzziness.EditDistance(2)))))));
+                                    .Fuzziness(Fuzziness.EditDistance(1)))))));
 
             return searchResults
                 .Hits

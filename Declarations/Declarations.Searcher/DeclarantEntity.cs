@@ -2,10 +2,13 @@
 {
     public class DeclarantEntity
     {
-        public DeclarantEntity(string declId)
+        public DeclarantEntity(int internalId, string declId)
         {
+            InternalId = internalId;
             DeclarationId = declId;
         }
+
+        public int InternalId { get; set; }
 
         public string DeclarationId { get; set; }
 

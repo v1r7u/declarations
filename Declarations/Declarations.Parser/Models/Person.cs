@@ -17,6 +17,15 @@ namespace Declarations.Parser.Models
             Names.Add(name);
         }
 
+        public Person(string declarationId, string relation, string originName, string work, string position)
+        {
+            DeclarationId = declarationId;
+            Relation = relation;
+            OriginalFullName = originName;
+            WorkPlace = work;
+            Position = position;
+        }
+
         public int Id { get; }
 
         public string DeclarationId { get; }

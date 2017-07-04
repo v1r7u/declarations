@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Declarations.Searcher
@@ -59,7 +61,7 @@ namespace Declarations.Searcher
                 var docs = await _elastic.Search(o1.firstName, o1.lastName);
 
                 if (docs.Any())
-                    results.Add(new Result(o1.fullLine, docs.Select(i => new KeyValuePair<string, double?>(i.Result.DeclarationId, i.Score)).ToArray()));
+                    results.Add(new Result(o1.fullLine, docs.Select(i => (i.Result, i.Score)).ToArray()));
             }
 
             sw.Stop();
@@ -73,21 +75,37 @@ namespace Declarations.Searcher
                 Console.WriteLine($"{resultsInGroup} searches with {matchesPerRecord} matches. ");
                 foreach(var match in group)
                 {
-                    var min = match.DeclarationScores.Min(i => i.Value);
-                    var max = match.DeclarationScores.Max(i => i.Value);
-                    var avg = match.DeclarationScores.Average(i => i.Value);
+                    var min = match.DeclarationScores.Min(i => i.score);
+                    var max = match.DeclarationScores.Max(i => i.score);
+                    var avg = match.DeclarationScores.Average(i => i.score);
 
                     Console.WriteLine($"   *   Min:{min:00.0000}; Avg:{avg:00.0000} Max:{max:00.0000}; for {match.FullLine}");
                 }
             }
 
-
             return this;
+        }
+
+        private const string urlFormat = @"https://declarations.com.ua/declaration/{0}";
+
+        public void SaveSearchResults(string csvPath = "searchResults_fuzz1.csv")
+        {
+            var sb = new StringBuilder();
+            foreach (var row in results)
+            {
+                foreach (var record in row.DeclarationScores.OrderByDescending(i => i.score))
+                {
+                    var person = _preparation.persons[record.declaration.InternalId];
+                    sb.AppendLine($"{row.FullLine},{record.score},{person.Relation},{person.OriginalFullName},{person.WorkPlace},{person.Position},{string.Format(urlFormat, record.declaration.DeclarationId)}");
+                }
+            }
+
+            File.WriteAllText(csvPath, sb.ToString());
         }
 
         private class Result
         {
-            internal Result(string fullLine, KeyValuePair<string, double?>[] declarationScores)
+            internal Result(string fullLine, (DeclarantEntity declaration, double? score)[] declarationScores)
             {
                 FullLine = fullLine;
                 DeclarationScores = declarationScores;
@@ -95,7 +113,7 @@ namespace Declarations.Searcher
 
             internal string FullLine { get; }
 
-            internal KeyValuePair<string, double?>[] DeclarationScores { get; }
+            internal (DeclarantEntity declaration, double? score)[] DeclarationScores { get; }
         }
 
     }
