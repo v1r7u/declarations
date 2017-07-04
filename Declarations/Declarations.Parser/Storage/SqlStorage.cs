@@ -53,7 +53,7 @@ namespace Declarations.Parser.Storage
                     var namesBatch = Parse.names
                         .Skip(counter)
                         .Take(batchSize)
-                        .Select(name => new { id = name.Id, raw = name.Raw, parts = string.Join(" ", name.Parts) })
+                        .Select(name => new { id = name.Id, parts = string.Join(" ", name.Parts) })
                         .ToArray();
 
                     var result = await connection.ExecuteAsync(

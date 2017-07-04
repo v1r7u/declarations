@@ -41,7 +41,7 @@ namespace Declarations.Runner
 
         private static void ParseArchive()
         {
-            var path = @"C:\Users\igork\Downloads\full_export.json.bz2";
+            var path = @"D:\data\full_export.json.bz2";
 
             Parse.FromFile(path, Encoding.UTF8);
         }

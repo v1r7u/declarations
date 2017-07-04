@@ -12,12 +12,12 @@ namespace Declarations.Parser.Storage
         {
             var personsFile = File.Create("persons.csv");
 
-            var headers = encoding.GetBytes($"id,declaration-id,relation,name-ids{Environment.NewLine}");
+            var headers = encoding.GetBytes($"id,declaration-id,relation,original-full-name,work-place,position,name-ids{Environment.NewLine}");
             await personsFile.WriteAsync(headers, 0, headers.Length);
 
             foreach (var pers in Parse.persons)
             {
-                var str = $"{pers.Id},{pers.DeclarationId},{pers.Relation},{string.Join(",", pers.Names.Select(i => i.Id))}{Environment.NewLine}";
+                var str = $"{pers.Id},{pers.DeclarationId},{pers.Relation},{pers.OriginalFullName},{pers.WorkPlace},{pers.Position},{string.Join(",", pers.Names.Select(i => i.Id))}{Environment.NewLine}";
                 var bytes = encoding.GetBytes(str);
                 await personsFile.WriteAsync(bytes, 0, bytes.Length);
             }
@@ -29,12 +29,12 @@ namespace Declarations.Parser.Storage
         {
             var namesFile = File.Create("names.csv");
 
-            var headers = encoding.GetBytes($"id,raw,name-part-ids{Environment.NewLine}");
+            var headers = encoding.GetBytes($"id,name-part-ids{Environment.NewLine}");
             await namesFile.WriteAsync(headers, 0, headers.Length);
 
             foreach (var name in Parse.names)
             {
-                var str = $"{name.Id},{name.Raw},{string.Join(" ", name.Parts)}{Environment.NewLine}";
+                var str = $"{name.Id},{string.Join(" ", name.Parts)}{Environment.NewLine}";
                 var bytes = encoding.GetBytes(str);
                 await namesFile.WriteAsync(bytes, 0, bytes.Length);
             }

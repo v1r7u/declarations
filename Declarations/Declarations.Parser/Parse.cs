@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -71,10 +70,12 @@ namespace Declarations.Parser
                 var lastName = infocard["last_name"].ToString();
                 var firstName = infocard["first_name"].ToString();
                 var middleName = infocard["patronymic"].ToString();
+                var workPlace = infocard["office"].ToString();
+                var position = infocard["position"].ToString();
+                var relation = "owner";
 
-                var raw = $"{lastName} {firstName} {middleName}";
-                var parts = Splitter(raw);
-                SavePerson(declarationId,"owner", parts, raw);
+                var fullName = $"{lastName} {firstName} {middleName}";
+                SavePerson(declarationId,relation, fullName, workPlace, position);
 
                 step2 = jobject["unified_source"]["step_2"];
 
@@ -93,10 +94,9 @@ namespace Declarations.Parser
                                 continue;
                             }
 
-                            var relation = m1.First["subjectRelation"].ToString();
-
-                            parts = Splitter(bio);
-                            SavePerson(declarationId, relation, parts, bio);
+                            relation = m1.First["subjectRelation"].ToString();
+                            
+                            SavePerson(declarationId, relation, bio);
                         }
                     }
                 }
@@ -117,12 +117,11 @@ namespace Declarations.Parser
                         lastName = m1["lastname"].ToString();
                         firstName = m1["firstname"].ToString();
                         middleName = m1["middlename"].ToString();
-                        var relation = m1["subjectRelation"].ToString();
+                        relation = m1["subjectRelation"].ToString();
 
-                        raw = $"{lastName} {firstName} {middleName}";
-                        parts = Splitter(raw);
+                        fullName = $"{lastName} {firstName} {middleName}";
 
-                        SavePerson(declarationId, relation, parts, raw);
+                        SavePerson(declarationId, relation, fullName);
                     }
                 }
             }
@@ -138,22 +137,17 @@ namespace Declarations.Parser
             }
         }
 
-        private static void SavePerson(string declarationId, string relation, string[] parts, string rawData)
+        private static void SavePerson(string declarationId, string relation, string originName, string work = null, string position = null)
         {
+            var parts = Splitter(originName);
             var partIds = parts
-                .Select(i => nameParts.GetOrAdd(i.ToUpper(), (key) => new NamePart(Interlocked.Increment(ref namePartId), i)))
+                .Select(i => nameParts.GetOrAdd(i.ToUpper(), (key) => new NamePart(Interlocked.Increment(ref namePartId), i)).Id)
                 .ToArray();
 
-            var name = new Name
-            {
-                Id = Interlocked.Increment(ref nameId),
-                Raw = rawData,
-                Parts = partIds.Select(i => i.Id).ToArray()
-            };
-
+            var name = new Name(Interlocked.Increment(ref nameId), partIds);
             names.Add(name);
             
-            persons.Add(new Person(Interlocked.Increment(ref personId), declarationId, relation, name));
+            persons.Add(new Person(Interlocked.Increment(ref personId), declarationId, relation, originName, work, position, name));
         }
 
         private static string[] Splitter(string str)
