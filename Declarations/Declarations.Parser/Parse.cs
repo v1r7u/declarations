@@ -96,7 +96,7 @@ namespace Declarations.Parser
 
                             relation = m1.First["subjectRelation"].ToString();
                             
-                            SavePerson(declarationId, relation, bio);
+                            SavePerson(declarationId, relation, bio, workPlace, position);
                         }
                     }
                 }
@@ -121,7 +121,7 @@ namespace Declarations.Parser
 
                         fullName = $"{lastName} {firstName} {middleName}";
 
-                        SavePerson(declarationId, relation, fullName);
+                        SavePerson(declarationId, relation, fullName, workPlace, position);
                     }
                 }
             }

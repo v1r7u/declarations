@@ -10,13 +10,12 @@ namespace Declarations.Searcher
 {
     internal class Prepare
     {
-        private readonly string translationFiles = @"D:\data\2\all_trans.csv";
+        private readonly string translationFiles = @"D:\data\all_trans.csv";
 
         private readonly ConcurrentDictionary<int, HashSet<string>> allTranslations = new ConcurrentDictionary<int, HashSet<string>>();
         private readonly ConcurrentBag<string> notDefaultNameTypes = new ConcurrentBag<string>();
 
         internal readonly ConcurrentDictionary<int, DeclarantEntity> declarants = new ConcurrentDictionary<int, DeclarantEntity>();
-        internal readonly ConcurrentDictionary<int, Person> persons = new ConcurrentDictionary<int, Person>();
 
         internal Task LoadTranslations()
         {
@@ -25,7 +24,7 @@ namespace Declarations.Searcher
 
         internal async Task LoadDeclarations()
         {
-            using (var stream = File.OpenRead(@"D:\data\2\persons.csv"))
+            using (var stream = File.OpenRead(@"D:\data\persons.csv"))
             using (var reader = new StreamReader(stream))
             {
                 var line = await reader.ReadLineAsync();
@@ -36,11 +35,9 @@ namespace Declarations.Searcher
                     {
                         var parts = line.Split(',');
                         var nameId = int.Parse(parts.Last());
-                        var id = int.Parse(parts.First());
                         var declId = parts[1];
 
-                        declarants.TryAdd(nameId, new DeclarantEntity(id, declId));
-                        persons.TryAdd(id, new Person(declId, parts[2], parts[3], parts[4], parts[5]));
+                        declarants.TryAdd(nameId, new DeclarantEntity(declId, parts[2], parts[3], parts[4], parts[5]));
                     }
                     catch(Exception ex)
                     {
@@ -55,7 +52,7 @@ namespace Declarations.Searcher
 
         internal async Task MapDeclarantsToTranslations()
         {
-            using (var stream = File.OpenRead(@"D:\data\2\names.csv"))
+            using (var stream = File.OpenRead(@"D:\data\names.csv"))
             using (var reader = new StreamReader(stream))
             {
                 var line = await reader.ReadLineAsync();

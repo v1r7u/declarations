@@ -35,7 +35,7 @@ namespace Declarations.Searcher
             }
         }
 
-        public async Task<ElasticResult<DeclarantEntity>[]> Search(string firstName, string lastName)
+        public async Task<ElasticResult<DeclarantEntity>[]> Search(string firstName, string lastName, int fuzzDistance)
         {
             var pool = new SingleNodeConnectionPool(elasticUri);
             var connectionSettings = new ConnectionSettings(pool);
@@ -46,18 +46,18 @@ namespace Declarations.Searcher
                 .SearchAsync<DeclarantEntity>(search => search
                     .Index("declarants")
                     .MinScore(10.0)
-                    .Size(100)
+                    .Size(200)
                     .Query(q => q
                         .Bool(b => b
                             .Must(s =>
                                 s.Match(m => m
                                     .Query(firstName)
                                     .Field(f => f.FirstNames)
-                                    .Fuzziness(Fuzziness.EditDistance(1))),
+                                    .Fuzziness(Fuzziness.EditDistance(fuzzDistance))),
                                 s => s.Match(m => m
                                     .Query(lastName)
                                     .Field(f => f.LastNames)
-                                    .Fuzziness(Fuzziness.EditDistance(1)))))));
+                                    .Fuzziness(Fuzziness.EditDistance(fuzzDistance)))))));
 
             return searchResults
                 .Hits

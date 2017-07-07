@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Declarations.Parser.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -55,7 +56,7 @@ namespace Declarations.Searcher
         private List<ElasticResult<DeclarantEntity>> rawResults = new List<ElasticResult<DeclarantEntity>>();
         private List<Result> results = new List<Result>();
         
-        public async Task<Start> SearchAll()
+        public async Task<Start> SearchAll(int fuzzDistance)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -64,11 +65,10 @@ namespace Declarations.Searcher
             foreach (var owner in _owners.GetIterator())
             {
                 ownersCount++;
-                var o1 = owner;
-                var docs = await _elastic.Search(o1.firstName, o1.lastName);
+                var docs = await _elastic.Search(owner.firstName, owner.lastName, fuzzDistance);
 
                 if (docs.Any())
-                    results.Add(new Result(o1.fullLine, docs.Select(i => (i.Result, i.Score)).ToArray()));
+                    results.Add(new Result(owner.fullLine, docs.Select(i => (i.Result, i.Score)).ToArray()));
             }
 
             sw.Stop();
@@ -95,15 +95,20 @@ namespace Declarations.Searcher
 
         private const string urlFormat = @"https://declarations.com.ua/declaration/{0}";
 
-        public void SaveSearchResults(string csvPath = "searchResults_fuzz1.csv")
+        public void SaveSearchResults(string csvPath)
         {
             var sb = new StringBuilder();
             foreach (var row in results)
             {
-                foreach (var record in row.DeclarationScores.OrderByDescending(i => i.score))
+                var suspicionPersons = row.DeclarationScores
+                    .OrderByDescending(i => i.score)
+                    .Select(i => i.declaration)
+                    .GroupBy(i => i, new DeclarantComparer());
+                foreach (var person in suspicionPersons)
                 {
-                    var person = _preparation.persons[record.declaration.InternalId];
-                    sb.AppendLine($"{row.FullLine},{record.score},{person.Relation},{person.OriginalFullName},{person.WorkPlace},{person.Position},{string.Format(urlFormat, record.declaration.DeclarationId)}");
+                    var decl = person.Key;
+                    var declarationUrls = string.Join(",", person.Select(i => string.Format(urlFormat, i.DeclarationId)));
+                    sb.AppendLine($"{row.FullLine},{decl.Relation},{decl.OriginalFullName},{decl.WorkPlace},{decl.Position},{declarationUrls}");
                 }
             }
 
@@ -123,5 +128,29 @@ namespace Declarations.Searcher
             internal (DeclarantEntity declaration, double? score)[] DeclarationScores { get; }
         }
 
+        private class DeclarantComparer : IEqualityComparer<DeclarantEntity>
+        {
+            public bool Equals(DeclarantEntity x, DeclarantEntity y)
+            {
+                if (string.IsNullOrWhiteSpace(x.OriginalFullName) ||
+                    string.IsNullOrWhiteSpace(x.WorkPlace) ||
+                    string.IsNullOrWhiteSpace(x.Position) ||
+                    string.IsNullOrWhiteSpace(x.Relation))
+                    return false;
+
+                return string.Compare(x.OriginalFullName, y.OriginalFullName, StringComparison.CurrentCultureIgnoreCase) == 0 &&
+                        string.Compare(x.WorkPlace, y.WorkPlace, StringComparison.CurrentCultureIgnoreCase) == 0 &&
+                        string.Compare(x.Position, y.Position, StringComparison.CurrentCultureIgnoreCase) == 0 &&
+                        string.Compare(x.Relation, y.Relation, StringComparison.CurrentCultureIgnoreCase) == 0;
+            }
+
+            public int GetHashCode(DeclarantEntity obj)
+            {
+                return obj.OriginalFullName.GetHashCode() ^ 
+                       obj.WorkPlace.GetHashCode() ^ 
+                       obj.Position.GetHashCode() ^ 
+                       obj.Relation.GetHashCode();
+            }
+        }
     }
 }

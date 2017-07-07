@@ -2,18 +2,27 @@
 {
     public class DeclarantEntity
     {
-        public DeclarantEntity(int internalId, string declId)
+        public DeclarantEntity(string declId, string relation, string originName, string work, string position)
         {
-            InternalId = internalId;
             DeclarationId = declId;
+            Relation = relation;
+            OriginalFullName = originName;
+            WorkPlace = work;
+            Position = position;
         }
-
-        public int InternalId { get; set; }
-
-        public string DeclarationId { get; set; }
 
         public string[] FirstNames { get; set; }
 
         public string[] LastNames { get; set; }
+
+        public string DeclarationId { get; set; }
+
+        public string Relation { get; }
+
+        public string OriginalFullName { get; set; }
+
+        public string WorkPlace { get; set; }
+
+        public string Position { get; set; }
     }
 }

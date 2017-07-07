@@ -15,16 +15,16 @@ namespace Declarations.Runner
             Console.OutputEncoding = Encoding.UTF8;
             Console.WriteLine($"Started at {DateTime.UtcNow}");
 
-            //ParseArchive();
+            // ParseArchive();
             //Translate();
 
             try
             {
                 Start
                     .New()
-                    .PrepareData().Result
-                    .SearchAll().Result
-                    .SaveSearchResults();
+                    //.PrepareData().Result
+                    .SearchAll(0).Result
+                    .SaveSearchResults("searchResults_fuzz0.csv");
             }
             catch (AggregateException aggr)
             {
